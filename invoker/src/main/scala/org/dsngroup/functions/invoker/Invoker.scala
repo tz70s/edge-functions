@@ -18,24 +18,40 @@ package org.dsngroup.functions.invoker
 
 import java.util.Properties
 
-import scala.util.{Try, Success, Failure}
+import akka.actor.{ActorSystem, Props}
+
+import scala.util.{Failure, Success, Try}
 
 object Invoker extends App {
 
-  println(InvokerContext.props.getProperty("broker-address"))
+  implicit val system = ActorSystem("invoker-system")
+  implicit val invokerContext = InvokerContext()
+  implicit val router = Router()
 
-  object InvokerContext {
-    val props = new Properties()
-    private val resource = Try(this.getClass.getClassLoader.getResourceAsStream("invoker.properties"))
+  val activatorRef = system.actorOf(Props[Activator], "default-activator")
+  val subscribeActorRef = system.actorOf(SubscribeActor.props(activatorRef, "invoker-cli-test"), "default-subscriber")
+}
+
+class InvokerContext {
+
+  private val props = {
+    val _props = new Properties()
+    val resource = Try(this.getClass.getClassLoader.getResourceAsStream("invoker.properties"))
     resource match {
       case Success(v) =>
-        props.load(v)
+        _props.load(v)
         v.close()
       case Failure(e) =>
         println("Error opening invoker config, " + e.getMessage)
         // TODO: Load default configuration
-        props.setProperty("broker-address", "127.0.0.1:6276")
+        _props.setProperty("broker-address", "127.0.0.1:1883")
     }
+    _props
   }
+
+  val brokerAddress = props.getProperty("broker-address", "127.0.0.1:1883")
 }
 
+object InvokerContext {
+  def apply(): InvokerContext = new InvokerContext()
+}

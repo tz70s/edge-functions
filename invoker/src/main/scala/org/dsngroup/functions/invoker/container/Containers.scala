@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.dsngroup.functions.invoker
+package org.dsngroup.functions.invoker.container
 
 import com.spotify.docker.client.DefaultDockerClient
 
 object Containers {
 
-  private val dockerApiClient = DefaultDockerClient.fromEnv().build()
+  implicit val dockerApiClient = DefaultDockerClient.fromEnv().build()
 
   def listCurrentImages() = {
     dockerApiClient.listImages().toString

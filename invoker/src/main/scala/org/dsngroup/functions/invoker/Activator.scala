@@ -16,12 +16,55 @@
 
 package org.dsngroup.functions.invoker
 
-object Activator {
-  def activate(activationFrame: ActivationFrame) = {
-    // TODO: parse activation frame, parsed from json.
+import akka.actor.{Actor, ActorLogging}
+import spray.json._
+
+import scala.util.{Failure, Success, Try}
+import org.dsngroup.functions.invoker.container.Container
+
+
+/**
+  * The activator actor is respond for parsing and handling activation frame,
+  * and create the child container handling actor.
+  */
+class Activator extends Actor with ActorLogging {
+
+  import org.dsngroup.functions.invoker.container.Containers.dockerApiClient
+
+  override def receive = activate
+
+  /**
+    * The activate behavior will parse the incoming json message into activation frame,
+    * then, create a child container actor to deal with container related processing.
+    * @return Receive
+    */
+  def activate: Receive = {
+    // Received an activation frame for detail handling.
+    case message: String =>
+      println(s"Get message ! $message")
+      ActivationFrame.parse(message) match {
+        case Success(v) =>
+          val activateContainer = context.actorOf(Container.props, "child-container")
+          activateContainer ! v
+        case Failure(e) =>
+          // ignore this message.
+          log.error("The message's json format is not matched.")
+      }
   }
 }
 
 /** Used for represented as data frame of each control data*/
-case class ActivationFrame(containerRuntime: ContainerRuntime, codeSegment: String,
-                           dependencies: Seq[String])
+case class ActivationFrame(containerRuntime: String, codeSegment: String)
+
+object ActivationFrameProtocol extends DefaultJsonProtocol {
+  implicit val activationFrameFormat = jsonFormat2(ActivationFrame.apply)
+}
+
+object ActivationFrame {
+
+  import ActivationFrameProtocol._
+
+  def parse(rawMessage: String) = {
+    Try(rawMessage.parseJson.convertTo[ActivationFrame])
+  }
+}
