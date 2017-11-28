@@ -1,0 +1,8 @@
+{
+    "handler-name": "test_handler",
+    "code-name": "handler.py",
+    "code-seg": "# tested handler\ndef main(params):\n\tprint(params)\n\treturn params\n",
+    "continuation": {
+        "hello": "world"
+    }
+}
