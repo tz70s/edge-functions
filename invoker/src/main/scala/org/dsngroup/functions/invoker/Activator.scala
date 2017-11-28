@@ -30,6 +30,7 @@ import org.dsngroup.functions.invoker.container.Container
 class Activator extends Actor with ActorLogging {
 
   import org.dsngroup.functions.invoker.container.Containers.dockerApiClient
+  import org.dsngroup.functions.invoker.container.DockerAdapter._
 
   override def receive = activate
 
@@ -41,10 +42,9 @@ class Activator extends Actor with ActorLogging {
   def activate: Receive = {
     // Received an activation frame for detail handling.
     case message: String =>
-      println(s"Get message ! $message")
       ActivationFrame.parse(message) match {
         case Success(v) =>
-          val activateContainer = context.actorOf(Container.props, "child-container")
+          val activateContainer = context.actorOf(Container.props)
           activateContainer ! v
         case Failure(e) =>
           // ignore this message.

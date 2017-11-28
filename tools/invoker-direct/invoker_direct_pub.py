@@ -1,6 +1,7 @@
 # The command utils for testing invoker
 import paho.mqtt.client as mqtt
 import sys
+import json
 
 def file_handler():
     codeSeg = ""
@@ -18,4 +19,10 @@ mqttc = mqtt.Client("direct-publish-client")
 # bind the connect handler
 mqttc.connect(broker_address, broker_port, 60)
 
-flags = mqttc.publish(testing_topic, codeSeg)
+command = {}
+command["containerRuntime"] = "python"
+command["codeSegment"] = codeSeg
+command_str = json.dumps(command)
+print "Create action!"
+
+flags = mqttc.publish(testing_topic, command_str)

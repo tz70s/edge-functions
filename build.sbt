@@ -12,11 +12,12 @@ lazy val invoker = project.in(file("invoker"))
       name := "invoker",
       description := "The invocation agent sits in edge devices",
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-actor" % "2.5.4",
         "com.spotify" % "docker-client" % "8.9.2",
-        "org.eclipse.paho" % "org.eclipse.paho.client.mqttv3" % "1.0.2",
         "com.sandinh" %% "paho-akka" % "1.5.0",
-        "io.spray" %%  "spray-json" % "1.3.3"
+        "com.typesafe.akka" %% "akka-http" % "10.0.10",
+        "com.typesafe.akka" %% "akka-actor" % "2.5.4",
+        "com.typesafe.akka" %% "akka-stream" % "2.5.4",
+        "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.10"
       )
     )
 
